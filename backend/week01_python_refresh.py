@@ -40,7 +40,7 @@ def find_course(course_code):
             return course
     return None
 
-print(find_course("INT2204"))
+#print(find_course("INT2204"))
 
 # 6
 
@@ -57,16 +57,16 @@ def can_enroll(student_id, course_code):
     if duplicated:
         return False, "Sinh vien da dang ky hoc phan nay"
     return True, "Co the dang ky"
-print(can_enroll("22000002", "INT2204"))
+#print(can_enroll("22000002", "INT2204"))
 
 # 7 
-
+"""
 try:
     limit = int(input("Nhap so luong hoc phan muon hien thi: "))
     print(courses[:limit])
 except ValueError:
     print("So luong phai la so nguyen")
-
+"""
 # 8
 
 def search_courses(keyword):
@@ -79,4 +79,40 @@ def search_courses(keyword):
             results.append(course)
     return results
 
-print(search_courses("web"))
+#print(search_courses("web"))
+
+def find_student(student_id):
+    for student in students:
+        if student["id"] == student_id:
+            return student
+    return None
+
+
+def enroll_student(student_id, course_code):
+    student = find_student(student_id)
+    if student is None:
+        return False, "Khong tim thay sinh vien"
+
+    course = find_course(course_code)
+    if course is None: 
+        return False, "Hoc phan khong ton tai"
+    if course["enrolled"] >= course["capacity"]:
+        return False, "Lop het cho"
+
+    duplicated = any(
+        item["student_id"] == student_id and item["course_code"] == course_code for item in enrollments
+    )
+    if duplicated:
+        return False, "Sinh vien da dang ky hoc phan nay"
+    enrollments.append({"student_id": student_id, "course_code": course_code})
+    course["enrolled"] += 1
+    return True, "Dang ky hoc phan thanh cong"
+
+
+
+# test 
+print(enroll_student("22000001", "INT2204"))
+print(enroll_student("22000002", "INT2204"))
+print(enroll_student("22000003", "INT2205"))
+print(enroll_student("22000002", "INT2203"))
+print(enroll_student("22000002", "INT2204"))
