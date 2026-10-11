@@ -1,0 +1,4 @@
+name: Coursehub Local
+values:
+  - key: base_url
+    value: ''
