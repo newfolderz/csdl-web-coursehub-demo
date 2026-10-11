@@ -1,4 +1,12 @@
 $kind: http-request
 url: "{{base_url}}/students/22000001/enrollments"
 method: GET
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status code is 200\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r\n"
+    language: text/javascript
 order: 6000

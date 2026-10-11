@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{base_url}}/sections/WEB-01/capacity"
+method: PATCH
+body:
+  type: json
+  content: "{\r\n  \"capacity\": 3\r\n}\r\n"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Kiem tra cap nhat thanh cong - 200 OK\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r\n"
+    language: text/javascript
+order: 9000

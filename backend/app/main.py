@@ -8,7 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from .database import engine
-from .schemas import EnrollmentCreate
+from .schemas import EnrollmentCreate, CapacityUpdate
 
 logger = logging.getLogger(__name__)
 
@@ -222,3 +222,137 @@ def delete_enrollment(student_id: str, class_section_id: str) -> Response:
             detail="Khong tim thay dang ky can huy",
             )
         return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+#Bai 1
+@app.get("/lecturers")
+def get_lecturers() -> list[dict[str, object]]:
+    sql = """
+        SELECT id, name 
+        FROM lecturers 
+        ORDER BY id;
+    """
+    with engine.connect() as connection:
+        rows = connection.execute(text(sql)).mappings().all()
+    return [dict(row) for row in rows]
+
+# Bai 2 
+@app.get("/sections/{section_id}")
+def get_section(section_id: str) -> dict[str, object]:
+    sql = """
+        SELECT v.class_id,
+               v.course_code,
+               c.name AS course_name,
+               sem.code AS semester_code,
+               sem.name AS semester_name,
+               l.id AS lecturer_id,
+               l.name AS lecturer_name,
+               v.capacity,
+               v.enrolled,
+               v.remaining
+        FROM v_section_summary AS v
+        JOIN class_sections AS cs ON cs.id = v.class_id
+        JOIN courses AS c ON c.code = cs.course_code
+        JOIN semesters AS sem ON sem.code = cs.semester_code
+        JOIN lecturers AS l ON l.id = cs.lecturer_id
+        WHERE v.class_id = :section_id
+    """
+    with engine.connect() as connection:
+        row = connection.execute(
+            text(sql),
+            {"section_id": section_id.upper()},
+        ).mappings().first()
+
+    if row is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Khong tim thay lop hoc phan",
+        )
+
+    return dict(row)
+
+@app.patch("/sections/{section_id}/capacity")
+def update_section_capacity(
+    section_id: str, 
+    payload: CapacityUpdate
+) -> dict[str, str]:
+    
+    # Đổi tên cột cần lấy ở WHERE thành class_id để khớp với cấu trúc View của bạn
+    check_sql = """
+        SELECT capacity, enrolled 
+        FROM v_section_summary 
+        WHERE class_id = :section_id
+    """
+    
+    # Cập nhật vào bảng gốc class_sections dựa theo cột khóa chính 'id' (theo file seed của bạn)
+    update_sql = """
+        UPDATE class_sections 
+        SET capacity = :new_capacity 
+        WHERE id = :section_id
+    """
+    
+    with engine.begin() as connection:
+        section = connection.execute(
+            text(check_sql), 
+            {"section_id": section_id}
+        ).mappings().first()
+        
+        # Ràng buộc 1: Nếu lớp không tồn tại trả về lỗi 404
+        if section is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Lop hoc phan khong ton tai",
+            )
+            
+        # Ràng buộc 2: Không cho capacity nhỏ hơn số lượng học viên thực tế đã đăng ký (enrolled)
+        if payload.capacity < section["enrolled"]:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Suc chua moi khong duoc nho hon so luong sinh vien da dang quy",
+            )
+            
+        # Thực hiện cập nhật
+        connection.execute(
+            text(update_sql), 
+            {"new_capacity": payload.capacity, "section_id": section_id}
+        )
+        
+    return {"message": "Cap nhat suc chua thanh cong"}
+
+
+# --- BÀI 4: MỞ RỘNG TÌM KIẾM VÀ PHÂN TRANG CHO COURSES ---
+@app.get("/courses")
+def list_courses(
+    q: str | None = Query(default=None, min_length=1),
+    skip: int = Query(default=0, ge=0),            # Mặc định bằng 0, kiểm tra skip không âm (ge=0)
+    limit: int = Query(default=10, ge=1, le=100),  # Mặc định bằng 10, giới hạn từ 1 đến 100 (ge=1, le=100)
+) -> list[dict[str, object]]:
+    sql = """
+        SELECT code, name, credits
+        FROM courses
+    """
+    # Gán trước tham số phân trang vào dictionary để truyền cho SQLAlchemy
+    parameters: dict[str, object] = {
+        "limit": limit,
+        "skip": skip
+    }
+    
+    if q is not None:
+        keyword = q.strip().lower()
+        if not keyword:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Tu khoa tim kiem khong duoc rong",
+            )
+        sql += """
+            WHERE LOWER(code) LIKE :keyword
+            OR LOWER(name) LIKE :keyword
+        """
+        parameters["keyword"] = f"%{keyword}%"
+        
+    # Áp dụng ORDER BY ổn định theo khóa chính 'code' trước khi thực hiện OFFSET/LIMIT
+    sql += " ORDER BY code LIMIT :limit OFFSET :skip"
+    
+    with engine.connect() as connection:
+        rows = connection.execute(text(sql), parameters).mappings().all()
+    return [dict(row) for row in rows]

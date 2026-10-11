@@ -3,4 +3,12 @@ url: "{{base_url}}/courses?q=web"
 method: GET
 queryParams:
   q: web
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status code is 200\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r\n"
+    language: text/javascript
 order: 3000

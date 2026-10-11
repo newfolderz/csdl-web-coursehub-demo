@@ -1,0 +1,39 @@
+$kind: http-request
+url: "{{base_url}}/?q=python&skip=0&limit=10"
+method: GET
+queryParams:
+  - key: q
+    value: python
+    disabled: false
+    description: ""
+  - key: skip
+    value: "0"
+    disabled: false
+    description: ""
+  - key: limit
+    value: "10"
+    disabled: false
+    description: ""
+scripts:
+  - type: afterResponse
+    code: "// 1. Kiểm tra mã trạng thái trả về phải là 200 OK\r
+
+      pm.test(\"Kiem tra ma trang thai tra ve phai la 200 OK\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r
+
+      \r
+
+      // 2. Kiểm tra dữ liệu trả về phải là một mảng danh sách\r
+
+      pm.test(\"Du lieu phai tra ve dang danh sach (Array)\", function () {\r
+
+      \    var jsonData = pm.response.json();\r
+
+      \    pm.expect(jsonData).to.be.an('array');\r
+
+      });"
+    language: text/javascript
+order: 10000

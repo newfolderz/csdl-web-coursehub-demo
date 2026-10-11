@@ -1,4 +1,13 @@
 $kind: http-request
-url: ""
-method: GET
+url: "{{base_url}}/enrollments"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"student_id\": \"123\",\r
+
+    \    \"class_section_id\": \"\"\r
+
+    }"
 order: 7000
