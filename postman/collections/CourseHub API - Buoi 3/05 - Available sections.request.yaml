@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{base_url}}/sections?available_only=true"
+method: GET
+queryParams:
+  available_only: "true"
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Status code is 200\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r\n"
+    language: text/javascript
+order: 5000

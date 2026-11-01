@@ -40,7 +40,7 @@ def find_course(course_code):
             return course
     return None
 
-#print(find_course("INT2204"))
+print(find_course("INT2204"))
 
 # 6
 
@@ -57,16 +57,16 @@ def can_enroll(student_id, course_code):
     if duplicated:
         return False, "Sinh vien da dang ky hoc phan nay"
     return True, "Co the dang ky"
-#print(can_enroll("22000002", "INT2204"))
+print(can_enroll("22000002", "INT2204"))
 
 # 7 
-"""
 try:
     limit = int(input("Nhap so luong hoc phan muon hien thi: "))
     print(courses[:limit])
 except ValueError:
     print("So luong phai la so nguyen")
-"""
+
+
 # 8
 
 def search_courses(keyword):
@@ -79,7 +79,7 @@ def search_courses(keyword):
             results.append(course)
     return results
 
-#print(search_courses("web"))
+print(search_courses("web"))
 
 def find_student(student_id):
     for student in students:
@@ -111,8 +111,29 @@ def enroll_student(student_id, course_code):
 
 
 # test 
+# TH: dang ky trung 
 print(enroll_student("22000001", "INT2204"))
+# TH: dang ky thanh cong 
 print(enroll_student("22000002", "INT2204"))
+# TH: Sinh vien khong ton tai 
 print(enroll_student("22000003", "INT2205"))
+# TH: Hoc phan khong ton tai 
 print(enroll_student("22000002", "INT2203"))
+# TH: Lop het cho 
 print(enroll_student("22000002", "INT2204"))
+
+
+""" Ket qua quan sat duoc: 
+INT2204 - con 1 cho
+INT2205 - con 0 cho
+{'code': 'INT2204', 'name': 'Co so du lieu Web va he thong thong tin', 'capacity': 3, 'enrolled': 2}
+(True, 'Co the dang ky')
+Nhap so luong hoc phan muon hien thi: 1
+[{'code': 'INT2204', 'name': 'Co so du lieu Web va he thong thong tin', 'capacity': 3, 'enrolled': 2}]
+[{'code': 'INT2204', 'name': 'Co so du lieu Web va he thong thong tin', 'capacity': 3, 'enrolled': 2}]
+(False, 'Sinh vien da dang ky hoc phan nay')
+(True, 'Dang ky hoc phan thanh cong')
+(False, 'Khong tim thay sinh vien')
+(False, 'Hoc phan khong ton tai')
+(False, 'Lop het cho')
+"""
