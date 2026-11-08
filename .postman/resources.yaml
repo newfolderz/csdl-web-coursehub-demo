@@ -2,6 +2,8 @@
 workspace:
   id: 89e6782b-cd21-4fa9-887e-2d02bf907d47
 
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
 cloudResources:
   collections:
     ../postman/collections/CourseHub API - Buoi 3 Copy: b324a8ae-b601-40be-8917-28f92fc39ab5
