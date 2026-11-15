@@ -24,7 +24,13 @@ jobs:
       - name: Compile backend
         run: python -m compileall backend
       - name: Test backend contract
-        run: python -m pytest backend/tests -q
+        run: |
+          export DB_HOST=127.0.0.1
+          export DB_PORT=5432
+          export DB_NAME=coursehub
+          export DB_USER=ci_test
+          export DB_PASSWORD="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+          python -m pytest backend/tests -q
 
   frontend:
     runs-on: ubuntu-latest
