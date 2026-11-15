@@ -2,8 +2,9 @@ name: CourseHub CI
 
 on:
   push:
-    branches: [main]
+    branches: [ main, week06-docker-ci ]
   pull_request:
+    branches: [ main, week06-docker-ci ]
 
 permissions:
   contents: read
